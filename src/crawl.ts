@@ -17,7 +17,11 @@ export function getHeadingFromHTML(html: string): string {
 }
 
 export function getFirstParagraphFromHTML(html: string): string {
+    const dom = new JSDOM(html)
+    const document = dom.window.document
+    const main = document.querySelector('main')
 
+    const paragraph = main?.querySelector('p') || document.querySelector('p')
 
-    return ''
+    return paragraph?.textContent?.trim() || ''
 }
