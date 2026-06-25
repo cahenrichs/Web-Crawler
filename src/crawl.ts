@@ -15,3 +15,9 @@ export function getHeadingFromHTML(html: string): string {
     const heading = document.querySelector('h1') || document.querySelector('h2')
     return heading?.textContent?.trim() || ''
 }
+
+export function getFirstParagraphFromHTML(html: string): string {
+
+
+    return ''
+}

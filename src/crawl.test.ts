@@ -1,5 +1,5 @@
 import { test, expect, describe  } from "vitest"
-import { getHeadingFromHTML, normalizeURL } from "./crawl.js"
+import { getHeadingFromHTML, normalizeURL, getFirstParagraphFromHTML } from "./crawl.js"
 import { JSDOM } from "jsdom"
 
 describe("normalizeURL", () => {
@@ -54,5 +54,47 @@ describe("getHeadingFromHTML", () => {
         const html = '<html><body><h2>Subheading</h2></body></html>'
         const result = getHeadingFromHTML(html)
         expect(result).toBe('Subheading')
+    })
 })
+
+describe("getFirstParagraphFromHTML", () => {
+    test("main priority", () => {
+        const inputbody = `
+          <html><body>
+            <p>Outside paragraph.</p>
+            <main>
+                <p>Main paragraph.</p>
+                </main>
+        </body></html>
+`;
+  const actual = getFirstParagraphFromHTML(inputbody);
+  const expected = "Main paragraph.";
+  expect(actual).toEqual(expected);
+    })
+
+    test("main p tag missing, so get first one", () => {
+        const inputbody = `
+          <html><body>
+            <p>Outside paragraph.</p>
+            <main>
+                </main>
+        </body></html>
+`;
+  const actual = getFirstParagraphFromHTML(inputbody);
+  const expected = "Outside paragraph.";
+  expect(actual).toEqual(expected);
+    })
+
+    test("No p tag", () => {
+        const inputbody = `
+          <html><body>
+            <main>
+                <h1>Main paragraph.</h1>
+                </main>
+        </body></html>
+`;
+  const actual = getFirstParagraphFromHTML(inputbody);
+  const expected = "";
+  expect(actual).toEqual(expected);
+    })
 })
