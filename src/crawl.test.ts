@@ -148,3 +148,53 @@ describe("getURLsFromHTML", () => {
     expect(actual).toEqual(expected)
   })
 })
+
+describe("getImagesFromHTML", () => {
+    test("getImagesFromHTML relative", () => {
+        const inputURL = "https://crawler-test.com";
+        const inputBody = `<html><body><img src="/logo.png" alt="Logo"></body></html>`;
+
+        const actual = getImagesFromHTML(inputBody, inputURL);
+        const expected = ["https://crawler-test.com/logo.png"];
+
+    expect(actual).toEqual(expected);
+    })
+
+    test("no leading slash", () => {
+        const inputURL = "https://crawler-test.com"; 
+        const inputBody = `<html><body><img src="logo.png" alt="Logo"></body></html>`;
+
+        const actual = getImagesFromHTML(inputBody, inputURL);
+        const expected = ["https://crawler-test.com/logo.png"];
+
+    expect(actual).toEqual(expected);
+    })
+
+    test("returns an empty array if no img tags are found", () => {
+        const inputURL = "https://crawler-test.com"; 
+        const inputBody = `<html><body><p>No image here</p></body></html>`;
+
+        const actual = getImagesFromHTML(inputBody, inputURL);
+        const expected: string[] = [];
+
+    expect(actual).toEqual(expected);
+    })
+
+    test("finds all of the img tags in the body", () => {
+        const inputURL = "https://crawler-test.com"; 
+        const inputBody = `<html><body>
+        <img src="/logo.png" alt="Logo">
+        <img src="/banner.jpg" alt="Banner">
+        <img src="https://crawler-test.com/icons/icon.svg" alt="Icon">
+        </body></html>`;
+
+        const actual = getImagesFromHTML(inputBody, inputURL);
+
+        const expected = [
+            'https://crawler-test.com/logo.png',
+            'https://crawler-test.com/banner.jpg',
+            'https://crawler-test.com/icons/icon.svg',
+        ]
+        expect(actual).toEqual(expected)
+    })
+})
