@@ -1,4 +1,5 @@
 import { JSDOM } from "jsdom";
+import { url } from "node:inspector";
 
 export function normalizeURL(url: string) {
   const urlObj = new URL(url);
@@ -43,4 +44,25 @@ export function getURLsFromHTML(html: string, baseURL: string): string[] {
       urls.push(url.href)
     }
   return urls
+}
+
+export function getImagesFromHTML(html: string, baseURL: string): string[] {
+  const urls: string[] = []
+  const dom = new JSDOM(html)
+  const document = dom.window.document
+  const main = document.querySelectorAll('img')
+
+  for (const imgElement of main) {
+    const src = imgElement.getAttribute("src")
+
+    if (!src) {
+      continue
+    }
+
+    const imageURL = new URL(src, baseURL)
+    urls.push(imageURL.href)
+  }
+
+  return urls
+
 }

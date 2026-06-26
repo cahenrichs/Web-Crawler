@@ -1,5 +1,5 @@
 import { test, expect, describe  } from "vitest"
-import { getHeadingFromHTML, normalizeURL, getFirstParagraphFromHTML, getURLsFromHTML } from "./crawl.js"
+import { getHeadingFromHTML, normalizeURL, getFirstParagraphFromHTML, getURLsFromHTML, getImagesFromHTML } from "./crawl.js"
 import { JSDOM } from "jsdom"
 
 describe("normalizeURL", () => {
