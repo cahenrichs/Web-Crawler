@@ -27,6 +27,20 @@ export function getFirstParagraphFromHTML(html: string): string {
 }
 
 export function getURLsFromHTML(html: string, baseURL: string): string[] {
+  const urls: string[] = []
+    const dom = new JSDOM(html)
+    const document = dom.window.document
+    const main = document.querySelectorAll('a')
 
-  return ['']
+    for (const anchorElement of main) {
+      const href = anchorElement.getAttribute("href")
+
+      if (!href) {
+        continue
+      }
+
+      const url = new URL(href, baseURL)
+      urls.push(url.href)
+    }
+  return urls
 }
