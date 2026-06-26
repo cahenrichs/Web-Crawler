@@ -1,5 +1,5 @@
 import { test, expect, describe  } from "vitest"
-import { getHeadingFromHTML, normalizeURL, getFirstParagraphFromHTML } from "./crawl.js"
+import { getHeadingFromHTML, normalizeURL, getFirstParagraphFromHTML, getURLsFromHTML } from "./crawl.js"
 import { JSDOM } from "jsdom"
 
 describe("normalizeURL", () => {
@@ -97,4 +97,54 @@ describe("getFirstParagraphFromHTML", () => {
   const expected = "";
   expect(actual).toEqual(expected);
     })
+})
+
+describe("getURLsFromHTML", () => {
+    test("absolute", () => {
+      const inputURL = "https://crawler-test.com";
+      const inputBody = `<html><body><a href="/path/one"><span>Boot.dev</span></a></body></html>`;
+
+      const actual = getURLsFromHTML(inputBody, inputURL);
+      const expected = ["https://crawler-test.com/path/one"];
+
+      expect(actual).toEqual(expected);
+    })
+
+    test('finds all a tags in the HTML body', () => {
+    const inputURL = 'https://crawler-test.com'
+    const inputBody = `
+      <html>
+        <body>
+          <a href="/path/one">One</a>
+          <a href="/path/two">Two</a>
+          <a href="https://crawler-test.com/path/three">Three</a>
+        </body>
+      </html>
+    `
+
+    const actual = getURLsFromHTML(inputBody, inputURL)
+    const expected = [
+      'https://crawler-test.com/path/one',
+      'https://crawler-test.com/path/two',
+      'https://crawler-test.com/path/three',
+    ]
+
+    expect(actual).toEqual(expected)
+  })
+
+  test('handles relative URLs without a leading slash', () => {
+    const inputURL = 'https://crawler-test.com'
+    const inputBody = `
+      <html>
+        <body>
+          <a href="path/one">One</a>
+        </body>
+      </html>
+    `
+
+    const actual = getURLsFromHTML(inputBody, inputURL)
+    const expected = ['https://crawler-test.com/path/one']
+
+    expect(actual).toEqual(expected)
+  })
 })
