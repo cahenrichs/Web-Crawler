@@ -1,6 +1,7 @@
 import { test, expect, describe  } from "vitest"
 import { getHeadingFromHTML, normalizeURL, getFirstParagraphFromHTML, getURLsFromHTML, getImagesFromHTML } from "./crawl.js"
 import { JSDOM } from "jsdom"
+import { desc } from "drizzle-orm"
 
 describe("normalizeURL", () => {
     test("return the normalized version of the URL as a string", () => {
@@ -197,4 +198,75 @@ describe("getImagesFromHTML", () => {
         ]
         expect(actual).toEqual(expected)
     })
+})
+
+describe("extractPageData", () => {
+  test("basic usage", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+      <html><body>
+      <h1>Test Title</h1>
+      <p>This is the first paragraph.</p>
+      <a href="/link1">Link 1</a>
+      <img src="/image1.jpg" alt="Image 1">
+    </body></html>
+  `;
+
+  const actual = extractPageData(inputBody, inputURL);
+  const expected = {
+    url: "https://crawler-test.com",
+    heading: "Test Title",
+    first_paragraph: "This is the first paragraph.",
+    outgoing_links: ["https://crawler-test.com/link1"],
+    image_urls: ["https://crawler-test.com/image1.jpg"],
+  };
+
+  expect(actual).toEqual(expected)
+  })
+
+  test("handles multiple links and images", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+      <html><body>
+      <h1>Another Page</h1>
+      <p>This is the first paragraph.</p>
+      <a href="/link1">Link 1</a>
+      <a href="/link2">Link 2 </a>
+      <img src="/image1.jpg" alt="Image 1">
+      <img src="/image2.jpg" alt="Image 2">
+    </body></html>
+  `;
+
+  const actual = extractPageData(inputBody, inputURL);
+  const expected = {
+    url: "https://crawler-test.com",
+    heading: "Another Page",
+    first_paragraph: "This is the first paragraph.",
+    outgoing_links: ["https://crawler-test.com/link1", "https://crawler-test.com/link2"],
+    image_urls: ["https://crawler-test.com/image1.jpg", "https://crawler-test.com/image2.jpg"],
+  };
+
+  expect(actual).toEqual(expected)
+  })
+
+  test("handles empty values", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+      <html><body>
+      <div>Nothing here</div>
+    </body></html>
+  `;
+
+  const actual = extractPageData(inputBody, inputURL);
+  const expected = {
+    url: "https://crawler-test.com",
+    heading: "",
+    first_paragraph: "",
+    outgoing_links: [],
+    image_urls: [],
+  };
+
+  expect(actual).toEqual(expected)
+  })
+  
 })
