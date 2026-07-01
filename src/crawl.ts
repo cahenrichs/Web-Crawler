@@ -84,3 +84,29 @@ export function extractPageData(html: string, pageUrl: string): ExtractedPageDat
     image_urls: getImagesFromHTML(html, pageUrl)
   }
 }
+
+export async function getHTML(url:string) {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "USer-Agent": "BootCrawler/1.0"
+      },
+    });
+
+    if (response.status >= 400) {
+      console.error(`HTTP error: ${response.status} ${response.statusText}`);
+      return;
+    }
+
+    const contentType = response.headers.get("content-type")
+    if (!contentType || contentType !== "text/html") {
+      console.error("Content Type not text/html")
+    }
+
+    const html = await response.text()
+    console.log(html);
+  } catch (error) {
+    console.error("Failed to fetch HTML:", error)
+  }
+
+}
