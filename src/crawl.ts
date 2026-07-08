@@ -85,28 +85,61 @@ export function extractPageData(html: string, pageUrl: string): ExtractedPageDat
   }
 }
 
-export async function getHTML(url:string) {
+export async function getHTML(url: string) {
+  console.log(`crawling ${url}`);
+
+  let res;
   try {
-    const response = await fetch(url, {
-      headers: {
-        "USer-Agent": "BootCrawler/1.0"
-      },
+    res = await fetch(url, {
+      headers: { "User-Agent": "BootCrawler/1.0" },
     });
-
-    if (response.status >= 400) {
-      console.error(`HTTP error: ${response.status} ${response.statusText}`);
-      return;
-    }
-
-    const contentType = response.headers.get("content-type")
-    if (!contentType || contentType !== "text/html") {
-      console.error("Content Type not text/html")
-    }
-
-    const html = await response.text()
-    console.log(html);
-  } catch (error) {
-    console.error("Failed to fetch HTML:", error)
+  } catch (err) {
+    throw new Error(`Got Network error: ${(err as Error).message}`);
   }
 
+  if (res.status > 399) {
+    console.log(`Got HTTP error: ${res.status} ${res.statusText}`);
+    return;
+  }
+
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("text/html")) {
+    console.log(`Got non-HTML response: ${contentType}`);
+    return;
+  }
+
+  return res.text();
+}
+
+
+export async function crawlPage(
+  baseURL: string,
+  currentURL: string = baseURL,
+  pages: Record<string, number> = {},
+) {
+  const baseURLObj = new URL(baseURL);
+  const currentURLObj = new URL(currentURL);
+
+  if (baseURLObj.hostname !== currentURLObj.hostname){
+    return pages
+  }
+
+  const normalizeCurrentURL = normalizeURL(currentURL)
+  if (normalizeCurrentURL in pages) {
+    pages[normalizeCurrentURL] += 1;
+    return pages
+  }
+   pages[normalizeCurrentURL] = 1
+
+  const html = await getHTML(currentURL)
+  if (!html) {
+    return pages
+  }
+
+  const urls = await getURLsFromHTML(html, currentURL)
+
+  for (const url of urls) {
+    pages = await crawlPage(baseURL, url, pages)
+  }
+  return pages
 }
