@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom";
 import { url } from "node:inspector";
+import pLimit from "p-limit";
 
 export function normalizeURL(url: string) {
   const urlObj = new URL(url);
@@ -143,3 +144,24 @@ export async function crawlPage(
   }
   return pages
 }
+
+export class ConcurrentCrawler {
+  baseURL: URL;
+  pages: Record<string, number>;
+  limit: ReturnType<typeof pLimit>;
+
+  constructor(baseURL: string, maxConcurrency: number) {
+    this.baseURL = new URL(baseURL);
+    this.pages = {};
+    this.limit = pLimit(maxConcurrency);
+  }
+  private addPageVisit(normalizedURL: string): boolean {
+    if (this.pages[normalizedURL]) {
+      this.pages[normalizedURL]++;
+      return false
+    }
+    this.pages[normalizedURL] = 1
+    return true
+  }
+  }
+
